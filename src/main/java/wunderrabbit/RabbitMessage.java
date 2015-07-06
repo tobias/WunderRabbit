@@ -17,31 +17,42 @@
 package wunderrabbit;
 
 import com.rabbitmq.client.AMQP;
-import org.projectodd.wunderboss.messaging.Endpoint;
-import org.projectodd.wunderboss.messaging.Message;
-import org.projectodd.wunderboss.messaging.Response;
+import org.projectodd.wunderboss.codecs.Codec;
+import org.projectodd.wunderboss.messaging.Destination;
+import org.projectodd.wunderboss.messaging.ReplyableMessage;
 
 import java.util.Map;
 
-public class RabbitMessage implements Message<Void> {
-    public RabbitMessage(byte[] body, AMQP.BasicProperties properties, Endpoint<String> endpoint) {
+public class RabbitMessage implements ReplyableMessage {
+    public RabbitMessage(byte[] body, AMQP.BasicProperties properties, Codec codec, Destination destination) {
         this.body = body;
         this.properties = properties;
-        this.endpoint = endpoint;
-    }
-    @Override
-    public String contentType() {
-        return this.properties.getContentType();
+        this.codec = codec;
+        this.destination = destination;
     }
 
     @Override
-    public Map<String, Object> headers() {
+    public String id() {
+        return this.properties.getMessageId();
+    }
+
+    @Override
+    public String contentType() {
+        return contentType(this.properties);
+    }
+
+    public static String contentType(AMQP.BasicProperties properties) {
+        return properties.getContentType();
+    }
+
+    @Override
+    public Map<String, Object> properties() {
         return this.properties.getHeaders();
     }
 
     @Override
-    public Endpoint endpoint() {
-        return this.endpoint;
+    public Destination endpoint() {
+        return this.destination;
     }
 
     @Override
@@ -50,31 +61,18 @@ public class RabbitMessage implements Message<Void> {
     }
 
     @Override
-    public Response reply(byte[] content, String contentType, Map options) throws Exception {
-        return null;
+    public void reply(Object content, Codec codec, Map<Destination.MessageOpOption, Object> options) throws Exception {
+
     }
 
     @Override
-    public Response reply(String content, String contentType, Map options) throws Exception {
-        return null;
-    }
-
-    @Override
-    public <T> T body(Class T) {
-        if (T == String.class) {
-            return (T)new String(this.body);
-        } else {
-            return (T)body;
-        }
-    }
-
-    @Override
-    public Void implementation() {
-        return null;
+    public Object body() {
+        return this.codec.decode(this.body);
     }
 
     private final AMQP.BasicProperties properties;
     private final byte[] body;
-    private final Endpoint endpoint;
+    private final Codec codec;
+    private final Destination destination;
 
 }

@@ -27,9 +27,9 @@
   </licenses>
 
   <properties>
-    <version.wunderboss>0.1.0-SNAPSHOT</version.wunderboss>
+    <version.wunderboss>0.8.1</version.wunderboss>
     <version.rabbit>3.3.0</version.rabbit>
-    <version.clojure>1.6.0</version.clojure>
+    <version.clojure>1.7.0</version.clojure>
   </properties>
 
 
